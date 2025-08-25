@@ -1,4 +1,5 @@
 use std::time::SystemTime;
+use rsa::{Pkcs1v15Sign};
 use sha2::{Sha256, Digest};
 
 use crate::models::transaction::Transaction;
@@ -12,6 +13,8 @@ pub struct Block {
     pub hash: String,
     pub data: Vec<Transaction>,
     pub nonce: u32,
+    pub sign: Vec<u8>,
+    pub validator_addr: Option<String>,
 }
 
 const DIFFICULTY: usize = 4;
@@ -25,7 +28,7 @@ impl Block {
 
         return Self { index: index, 
             timestamp: SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs(),
-            prev_hash: prev_hash, hash: hash, data: data, nonce: 0 }
+            prev_hash: prev_hash, hash: hash, data: data, nonce: 0, sign: Vec::<u8>::new(), validator_addr: None }
     }
 
     pub fn calculte_hash(index: u32, timestamp: u64, prev_hash: Option<String>, data: Vec<Transaction>, nonce: u32) -> String {
@@ -51,6 +54,15 @@ impl Block {
         }
         let elapsed_time = SystemTime::now().duration_since(start_time).unwrap();
         println!("Blocked mined in {} seconds", elapsed_time.as_secs());
+    }
+
+    pub fn sign(self: &mut Self, validator: &User) {
+        let private_key = validator.get_private_key();
+        let mut hasher = Sha256::new();
+        hasher.update(format!("{:#?}{}{:#?}", self.prev_hash, self.hash, self.data));
+        let hash = hasher.finalize();
+        self.sign = private_key.sign(Pkcs1v15Sign::new::<Sha256>(), &hash).expect("Failed to sign block");
+        self.validator_addr = Some(validator.get_address().to_owned());
     }
 
     pub fn add_txs(self: &mut Self, sender: User, receiver: User, amount: f64) {

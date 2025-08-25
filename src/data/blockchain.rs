@@ -22,7 +22,7 @@ impl Blockchain {
         let mut block = Block::new(index, prev_hash, data);
         block.mine();
         let validator = self.select_validator_PoS();
-        //block.sign(validator);
+        block.sign(validator);
         self.chain.push(block);
     }
 
