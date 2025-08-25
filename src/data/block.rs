@@ -41,6 +41,7 @@ impl Block {
     pub fn mine(self: &mut Self) {
 
         let target = "0".repeat(DIFFICULTY);
+        let start_time = SystemTime::now();
         while !self.hash.starts_with(&target) {
             self.nonce += 1;
             let prev_hash = self.prev_hash.clone();
@@ -48,6 +49,8 @@ impl Block {
             self.hash = Block::calculte_hash(self.index, 
                 self.timestamp, prev_hash, data, self.nonce);
         }
+        let elapsed_time = SystemTime::now().duration_since(start_time).unwrap();
+        println!("Blocked mined in {} seconds", elapsed_time.as_secs());
     }
 
     pub fn add_txs(self: &mut Self, sender: User, receiver: User, amount: f64) {
