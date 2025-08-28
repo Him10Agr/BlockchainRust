@@ -4,8 +4,15 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+hex-literal = "1.0.0"
 rand = "0.8.*"
 rsa = { version = "0.9.8", features = ["sha2"] }
 rust-crypto = "0.2.36"
 sha2 = "0.10.9"
 tokio = { version = "1.47.1", features = ["full"] }
+web3 = "0.19.0"
+
+[workspace]
+members = [
+    "contracts/counter",
+]
